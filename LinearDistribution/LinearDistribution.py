@@ -44,7 +44,8 @@ class LinearDistributionWidget(ScriptedLoadableModuleWidget):
     logic = LinearDistributionLogic()
     Image = self.inputSelector.currentNode()
     cloneVolume = self.outputSelector.currentNode()
-    result = logic.calcDoseRadius(Image, cloneVolume)
+    burnTime = self.burnTimeSelector.value
+    result = logic.calcDoseRadius(Image, cloneVolume, burnTime)
     #qt.QMessageBox.information(slicer.util.mainWindow(), 'Slicer Python', result2)
 
   def onNeedlePlanButtonClicked(self):
@@ -112,6 +113,12 @@ class LinearDistributionWidget(ScriptedLoadableModuleWidget):
 
     # Add vertical spacer
     self.layout.addStretch(1)
+     
+    #ADD BURNING TIME MANAGEMENT 
+    burnTimeSelector = qt.QSpinBox()
+    burnTimeSelector.setMinimum(1)
+    parametersFormLayout.addRow("Burning time at fiducials : ", burnTimeSelector)
+    self.burnTimeSelector = burnTimeSelector
 
     #CALC BUTTON
     calcButton = qt.QPushButton("Calculate Ablation")
@@ -132,8 +139,9 @@ class LinearDistributionWidget(ScriptedLoadableModuleWidget):
     entry.setMinimum(1)
     parametersFormLayout.addRow(entryLabel, entry)
     self.entry = entry
-    end = qt.QSpinBox()
+
     endLabel = qt.QLabel("Needle Tip = Fiducial ")
+    end = qt.QSpinBox()
     end.setMinimum(1)
     parametersFormLayout.addRow(endLabel, end)
     self.end = end
@@ -240,14 +248,15 @@ class LinearDistributionLogic(ScriptedLoadableModuleLogic):
 
 
 
-  def calcDoseRadius(self, Image, cloneVolume):
-    #Image = '03'
-    time = 5 # burning time 
-    doseMap=[[2, 4, 6, 8, 10], [5, 4, 3, 2, 1]]
+  def calcDoseRadius(self, Image, cloneVolume, burnTime):
+    dose = []
+    radius = []
+    for b in range(1,burnTime+1): 
+      dose.append(b)
+      radius.insert(0,b)
 
-    #Image = self.inputSelector.currentNode()
-    #vol = self.outputSelector.currentNode()
-    #print(cloneVolume)
+    doseMap = [dose, radius]
+
     vol = slicer.util.array(cloneVolume.GetID())
     vol.fill(-1000)
 
